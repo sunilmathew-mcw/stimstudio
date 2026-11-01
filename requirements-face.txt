@@ -1,0 +1,3 @@
+-r requirements.txt
+mtcnn>=1.0
+tensorflow>=2.15

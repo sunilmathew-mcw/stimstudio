@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  stimstudio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: stimstudio-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - STIMULUS_FORGE_HOST=0.0.0.0
+      - STIMULUS_FORGE_PORT=8000
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - STIMULUS_FORGE_DATA_DIR=/app/data
+    volumes:
+      - stimulus-data:/app/data
+      # Optional: Mount local GGUF models for zero-cost offline local inference
+      # - ${HOME}/LLM:/models:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  stimulus-data:
+    driver: local

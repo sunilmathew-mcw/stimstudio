@@ -1,0 +1,82 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stimstudio"
+version = "0.1.0"
+description = "StimStudio: Multimodal cognitive stimulus generation platform with decoupled client-server architecture, local GGUF/cloud inference, and FinOps telemetry."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "imageio>=2.31",
+  "numpy>=1.24",
+  "opencv-python>=4.8",
+  "openpyxl>=3.1",
+  "pandas>=2.0",
+  "Pillow>=10.0",
+  "pydantic>=2.0",
+  "pyqtgraph>=0.13",
+  "PyQt5>=5.15",
+  "QtPy>=2.4"
+]
+
+[project.optional-dependencies]
+server = [
+  "fastapi>=0.110.0",
+  "httpx>=0.27.0",
+  "python-multipart>=0.0.9",
+  "uvicorn[standard]>=0.28.0"
+]
+face = [
+  "mtcnn>=1.0",
+  "tensorflow>=2.15"
+]
+llm = [
+  "llama-cpp-python>=0.3"
+]
+cloud = [
+  "anthropic>=0.70",
+  "google-genai>=1.0",
+  "openai>=2.0"
+]
+local-images = [
+  "accelerate>=1.2",
+  "diffusers>=0.35",
+  "safetensors>=0.4",
+  "torch>=2.2",
+  "transformers>=4.48"
+]
+all = [
+  "accelerate>=1.2",
+  "anthropic>=0.70",
+  "diffusers>=0.35",
+  "fastapi>=0.110.0",
+  "google-genai>=1.0",
+  "httpx>=0.27.0",
+  "llama-cpp-python>=0.3",
+  "mtcnn>=1.0",
+  "openai>=2.0",
+  "python-multipart>=0.0.9",
+  "safetensors>=0.4",
+  "tensorflow>=2.15",
+  "torch>=2.2",
+  "transformers>=4.48",
+  "uvicorn[standard]>=0.28.0"
+]
+
+[project.scripts]
+stimstudio = "stimulus_forge.app:main"
+stimstudio-server = "stimulus_forge.api.server:main"
+stimstudio-cli = "stimulus_forge.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+stimulus_forge = [
+  "assets/*.xml",
+  "resources/*.json",
+  "resources/samples/*.txt",
+  "web/*"
+]

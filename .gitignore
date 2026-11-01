@@ -1,0 +1,53 @@
+# Operating System files
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+Thumbs.db
+Desktop.ini
+
+# Python runtime & build artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+build/
+dist/
+wheels/
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+
+# Runtime workspaces and data (may contain participant images/task outputs)
+data/pictures/*
+data/image_workspace/*
+data/experiments/*
+!data/pictures/.gitkeep
+!data/image_workspace/.gitkeep
+!data/experiments/.gitkeep
+
+# Participant questionnaires, clinical survey responses, and PHI assets
+assets/*.csv
+assets/*.tsv
+assets/*.xlsx
+assets/*.xls
+*responses*.csv
+*responses*.tsv
+*responses*.xlsx
+# Allow synthetic sanitized test fixture
+!assets/sample-responses.csv

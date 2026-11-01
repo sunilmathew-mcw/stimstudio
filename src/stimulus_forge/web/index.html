@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StimStudio — Visual Stimuli Generator for Research</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
+  <link rel="stylesheet" href="style.css?v=20261023_v16">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="logo-mark" title="StimStudio">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/>
+          <path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/>
+          <path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/>
+          <path d="M17.599 6.5a3 3 0 0 0 .399-1.375"/>
+          <path d="M6.002 5.125A3 3 0 0 0 6.401 6.5"/>
+          <path d="M3.477 10.896a4 4 0 0 1 .585-.396"/>
+          <path d="M19.938 10.5a4 4 0 0 1 .585.396"/>
+          <path d="M6 18a4 4 0 0 1-1.967-.516"/>
+          <path d="M19.967 17.484A4 4 0 0 1 18 18"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="logo-title">StimStudio</h1>
+        <p class="logo-subtitle">Visual Stimuli Generator for Cognitive Neuroscience/Psychology Research</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="status-pill" id="backend-status">
+        <span class="status-dot online"></span>
+        <span id="backend-status-text">Connecting...</span>
+      </div>
+      <div class="status-pill hardware-pill" id="hardware-status">
+        <span class="chip-icon">⚙</span>
+        <span id="hardware-text">Detecting hardware...</span>
+      </div>
+      <button id="btn-toggle-chat" class="btn-secondary icon-btn" title="Toggle Workflow Assistant Chat">
+        <span>💬 Assistant</span>
+      </button>
+      <button id="btn-open-help" class="btn-subtle icon-btn" title="Help &amp; User Guide">
+        <span>❓ Help</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="app-container">
+
+    <!-- Collapsible Settings Panel (Collapsed by default) -->
+    <section class="workflow-collapsible-panel card collapsed" id="workflow-panel">
+      <div class="workflow-collapsible-header" id="workflow-panel-header" title="Click to expand / collapse generation &amp; image settings">
+        <div class="workflow-header-left">
+          <span class="workflow-panel-chevron" id="workflow-panel-chevron">▼</span>
+          <span class="workflow-panel-icon">⚙️</span>
+          <h2 class="workflow-panel-title">Settings</h2>
+        </div>
+        <div class="workflow-summary-badges" id="workflow-summary-badges" aria-label="Current Settings Selections">
+          <span class="settings-summary-chip chip-inference" id="summary-chip-inference" title="Inference Provider &amp; Max Concepts">
+            <span class="chip-icon">🧠</span>
+            <span class="chip-text" id="summary-text-inference">Local Llama.cpp • 5 concepts</span>
+          </span>
+          <span class="settings-summary-chip chip-images" id="summary-chip-images" title="Image Source &amp; Count">
+            <span class="chip-icon">📸</span>
+            <span class="chip-text" id="summary-text-images">Wikimedia • 3/item</span>
+          </span>
+          <span class="settings-summary-chip chip-face" id="summary-chip-face" title="Face Detection">
+            <span class="chip-icon">👤</span>
+            <span class="chip-text" id="summary-text-face">Face Detection: On</span>
+          </span>
+          <span class="settings-summary-chip chip-crop" id="summary-chip-crop" title="Target Image Crop &amp; Dimensions">
+            <span class="chip-icon">✂️</span>
+            <span class="chip-text" id="summary-text-crop">Crop: 160x160</span>
+          </span>
+          <span class="settings-summary-chip chip-warning hidden" id="summary-chip-cache" title="Semantic Cache Status" style="display: none;">
+            <span class="chip-icon">⚡</span>
+            <span class="chip-text" id="summary-text-cache">Cache: Off</span>
+          </span>
+        </div>
+        <div class="workflow-header-actions">
+          <span class="text-xs text-muted" id="workflow-toggle-hint">Click to expand</span>
+          <button type="button" class="btn-subtle text-xs" id="btn-toggle-workflow" title="Toggle settings panel">
+            Expand Settings
+          </button>
+        </div>
+      </div>
+      <div class="workflow-collapsible-body" id="workflow-panel-body">
+        <div class="settings-grid">
+
+          <!-- Related Concepts Settings -->
+          <div class="settings-section">
+            <h3 class="settings-section-title">Related Concepts Settings</h3>
+
+            <div class="form-row">
+              <div class="form-group flex-grow">
+                <label for="provider-select">Inference Provider</label>
+                <select id="provider-select">
+                  <option value="local" selected>Local Llama.cpp (GGUF) — $0.00</option>
+                  <option value="google">Google Gemini Flash — $0.10/M</option>
+                  <option value="openai">OpenAI Structured — $2.50/M</option>
+                  <option value="anthropic">Anthropic Claude — $3.00/M</option>
+                  <option value="compatible">OpenAI-Compatible / Llama</option>
+                </select>
+              </div>
+              <div class="form-group compact-num-group">
+                <label for="max-concepts-input" title="Target number of related concepts/associations to generate">Max concepts</label>
+                <input type="number" id="max-concepts-input" class="num-spinner-input" min="1" max="50" value="5" step="1">
+              </div>
+            </div>
+
+            <!-- Local GGUF Model Config & Browse -->
+            <div class="form-group" id="local-model-group">
+              <div class="label-row">
+                <label for="local-model-path-input">Local GGUF Model</label>
+                <span id="local-model-validation" class="badge-status"></span>
+              </div>
+              <div class="input-with-action">
+                <input type="text" id="local-model-path-input" placeholder="/path/to/model.gguf">
+                <button id="btn-browse-model" class="btn-secondary" type="button" title="Browse Mac for .gguf model">Browse…</button>
+              </div>
+              <div class="detected-models-row" id="detected-models-row">
+                <select id="detected-models-select">
+                  <option value="">-- Detected GGUF models on machine --</option>
+                </select>
+                <button id="btn-scan-models" class="btn-subtle" type="button" title="Rescan Mac">↺</button>
+              </div>
+            </div>
+
+            <!-- Cloud Model Selection Dropdown -->
+            <div class="form-group" id="cloud-model-group" style="display: none;">
+              <div class="label-row">
+                <label for="cloud-model-select" id="cloud-model-label">Google Gemini Model</label>
+                <span id="cloud-model-badge" class="badge-status">Cloud</span>
+              </div>
+              <div class="detected-models-row">
+                <select id="cloud-model-select">
+                  <!-- Dynamically populated based on provider -->
+                </select>
+                <button id="btn-refresh-cloud-models" class="btn-subtle" type="button" title="Refresh available models">↺</button>
+              </div>
+              <div id="custom-cloud-model-row" style="display: none; margin-top: 6px;">
+                <input type="text" id="custom-cloud-model-input" placeholder="Enter custom model ID (e.g. gemini-3.8-flash)">
+              </div>
+            </div>
+
+            <!-- Optional Cloud Credentials -->
+            <details class="credentials-details" id="cloud-credentials-details" style="display: none;">
+              <summary>Cloud Credentials (optional)</summary>
+              <div class="credentials-body">
+                <div class="form-group">
+                  <label for="api-key-input">Session API Key / Token</label>
+                  <input type="password" id="api-key-input" placeholder="sk-..., AIza..., or hf_...">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label for="base-url-input" title="Leave blank for official OpenAI. Only needed if using a custom or self-hosted endpoint like Ollama (http://localhost:11434/v1) or LM Studio.">Base URL (optional)</label>
+                  <input type="text" id="base-url-input" placeholder="Leave blank for OpenAI (e.g. http://localhost:11434/v1)" title="Leave blank for official OpenAI. Only needed if using a custom or self-hosted endpoint like Ollama (http://localhost:11434/v1) or LM Studio.">
+                </div>
+              </div>
+            </details>
+
+            <div class="control-strip" style="margin-bottom: 0;">
+              <label class="toggle-label" title="When checked, reuse previously generated concepts for identical seed + count">
+                <input type="checkbox" id="cache-toggle" checked>
+                <span>Semantic LRU Cache</span>
+              </label>
+              <button id="btn-clear-concept-cache" class="btn-subtle text-xs" type="button" title="Clear cached concepts so the next generation runs fresh">
+                Clear Cache
+              </button>
+            </div>
+          </div>
+
+          <!-- Image Settings -->
+          <div class="settings-section">
+            <h3 class="settings-section-title">Image Settings</h3>
+
+            <div class="form-row">
+              <div class="form-group flex-grow">
+                <label for="image-source-select">Image Source</label>
+                <select id="image-source-select">
+                  <option value="bing" selected>Bing Web Search</option>
+                  <option value="wikimedia">Wikimedia &amp; Wikipedia (Free &amp; authentic)</option>
+                  <option value="text">Text stimulus (concept centered in image)</option>
+                  <option value="duckduckgo">DuckDuckGo Web Search</option>
+                  <option value="openverse">Openverse (Flickr &amp; archives)</option>
+                  <option value="huggingface">Hugging Face Serverless (FLUX.1 — free)</option>
+                  <option value="openai">OpenAI image generation</option>
+                  <option value="google">Google Imagen generation</option>
+                  <option value="local">Local Stable Diffusion — free</option>
+                </select>
+              </div>
+              <div class="form-group compact-num-group">
+                <label for="images-per-concept" title="How many images to get for each checked item in the tree">Images / item</label>
+                <input type="number" id="images-per-concept" class="num-spinner-input" min="1" max="30" value="3" step="1">
+              </div>
+            </div>
+
+            <!-- Download Destination Folder -->
+            <div class="form-group" style="margin-top: 0.65rem; margin-bottom: 0.75rem;">
+              <div class="label-row">
+                <label for="download-folder-input">Download Destination Folder</label>
+                <span id="download-folder-status" class="badge-status"></span>
+              </div>
+              <div class="input-with-action">
+                <input type="text" id="download-folder-input" placeholder="Default: .../data/image_workspace/downloads">
+                <button id="btn-browse-download-folder" class="btn-secondary" type="button" title="Browse Mac for destination folder">Browse…</button>
+              </div>
+            </div>
+
+            <!-- Separated Settings: Face Detection & Auto-Crop -->
+            <div class="image-subsettings-grid">
+
+              <!-- Sub-card 1: Face Detection -->
+              <div class="subsettings-card active" id="subsettings-face-card">
+                <div class="subsettings-header">
+                  <div class="subsettings-title-row">
+                    <span class="subsettings-icon">👤</span>
+                    <span class="subsettings-title">Face Detection</span>
+                  </div>
+                  <label class="toggle-label" title="Detect prominent foreground faces and display bounding boxes">
+                    <input type="checkbox" id="detect-faces-toggle" checked>
+                    <span class="subsettings-status-badge valid" id="detect-faces-status-badge">On</span>
+                  </label>
+                </div>
+                <div class="dimension-inline-row" title="Maximum number of faces to detect per image (default: 5, range: 1–10)">
+                  <span class="dim-label">Max faces</span>
+                  <div class="dimension-inputs-inline">
+                    <input type="number" id="max-faces-input" class="dim-input num-spinner-input" min="1" max="10" value="5" step="1" aria-label="Maximum faces to detect">
+                    <span class="dim-unit">faces</span>
+                  </div>
+                </div>
+                <div class="subsettings-option-row" title="Show or hide label tags on the ROI bounding boxes">
+                  <label class="toggle-label subsettings-subtoggle">
+                    <input type="checkbox" id="show-face-roi-labels-toggle" checked>
+                    <span>Show ROI labels</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Sub-card 2: Auto-Crop & Dimensions -->
+              <div class="subsettings-card" id="subsettings-crop-card">
+                <div class="subsettings-header">
+                  <div class="subsettings-title-row">
+                    <span class="subsettings-icon">✂️</span>
+                    <span class="subsettings-title">Auto-Crop</span>
+                  </div>
+                  <label class="toggle-label" title="Automatically crop detected primary face to target dimensions">
+                    <input type="checkbox" id="crop-faces-toggle">
+                    <span class="subsettings-status-badge muted" id="crop-faces-status-badge">Off</span>
+                  </label>
+                </div>
+                <div class="dimension-inline-row" title="Target dimensions and minimum image size (Width × Height in pixels)">
+                  <span class="dim-label">Size (W×H)</span>
+                  <div class="dimension-inputs-inline">
+                    <input type="number" id="target-width-input" class="dim-input num-spinner-input" min="32" max="4096" value="160" step="10" aria-label="Target width in pixels">
+                    <span class="dim-sep">×</span>
+                    <input type="number" id="target-height-input" class="dim-input num-spinner-input" min="32" max="4096" value="160" step="10" aria-label="Target height in pixels">
+                    <span class="dim-unit">px</span>
+                  </div>
+                </div>
+                <p class="subsettings-hint" style="margin-top: 0.2rem;">Crops primary face &amp; sets min search resolution.</p>
+              </div>
+
+            </div>
+
+            <!-- Optional web search style -->
+            <details class="credentials-details" id="bing-options-details">
+              <summary>More options (Image style)</summary>
+              <div class="credentials-body">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label for="bing-filter-select">Image style</label>
+                  <select id="bing-filter-select">
+                    <option value="" selected>Any style</option>
+                    <option value="photo">Photos only</option>
+                    <option value="square+photo">Square photos</option>
+                    <option value="square+face">Faces (square)</option>
+                    <option value="linedrawing">Line drawings</option>
+                    <option value="clipart">Clipart</option>
+                    <option value="transparent">Transparent PNG</option>
+                  </select>
+                </div>
+              </div>
+            </details>
+
+            <!-- Text Stimulus Options -->
+            <div class="form-group" id="text-stimulus-options-group" style="display: none; margin-bottom: 0.5rem;">
+              <div class="dimension-inline-row" style="display: flex; gap: 0.75rem; align-items: center;" title="Color scheme for centered text stimulus cards">
+                <div style="flex: 1;">
+                  <label for="text-stim-style-select" style="font-size: 0.78rem; font-weight: 600; color: var(--text-secondary);">Text Card Style</label>
+                  <select id="text-stim-style-select" style="width: 100%; margin-top: 0.25rem;">
+                    <option value="black-on-white" selected>Black Text on White Background</option>
+                    <option value="white-on-black">White Text on Black Background (Inverted)</option>
+                    <option value="black-on-gray">Black Text on Neutral Gray</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Local Diffusion Model Config -->
+            <div class="form-group" id="local-image-model-group" style="display: none; margin-bottom: 0;">
+              <div class="label-row">
+                <label for="local-image-model-path-input">Diffusion Checkpoint</label>
+                <span id="local-image-model-validation" class="badge-status"></span>
+              </div>
+              <div class="input-with-action">
+                <input type="text" id="local-image-model-path-input" placeholder="/Users/smathew/LLM/v1-5-pruned-emaonly.safetensors">
+                <button id="btn-browse-image-model" class="btn-secondary" type="button" title="Browse Mac for .safetensors">Browse…</button>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /.settings-grid -->
+      </div><!-- /.workflow-collapsible-body -->
+    </section><!-- /#workflow-panel -->
+
+    <!-- Bottom Row: Split Workspace (Left: Concept Tree, Right: Workspace & Gallery) -->
+    <div class="workspace-split-layout">
+
+      <!-- Left Panel: Load Concepts + Generate Controls + Concept Tree View -->
+      <aside class="card concept-tree-panel">
+
+        <!-- Load Concepts Section inside Concept Tree Panel -->
+        <div class="tree-load-section">
+          <div class="tree-load-header">
+            <h2>Load Concepts</h2>
+            <span id="file-upload-status" class="badge-status" style="margin-left: auto;"></span>
+          </div>
+
+          <div class="tree-load-controls">
+            <div class="input-with-action">
+              <input type="text" id="concept-input" placeholder="e.g. basketball, Michael Jordan" value="basketball">
+              <button id="btn-load-concepts" class="btn-secondary" type="button" title="Load entered concepts into tree">
+                Load
+              </button>
+              <input type="file" id="concept-file-input" accept=".txt,.csv,.xlsx,.xls,.docx,.json,.md,.tsv" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; opacity: 0;">
+              <button id="btn-upload-file" class="btn-secondary" type="button" title="Upload concept list (.txt, .csv, .xlsx, .docx, .json)">
+                📂 File…
+              </button>
+            </div>
+            <span class="field-hint" id="file-hint">Enter comma-separated concepts or browse a file</span>
+            <div id="subject-selector-row" class="subject-selector-row" style="margin-top: 6px; display: flex; align-items: center; gap: 8px;">
+              <label for="subject-input" id="subject-label" style="font-size: 0.78rem; font-weight: 600; color: var(--text-secondary, #666); white-space: nowrap;">Subject ID:</label>
+              <div class="subject-combobox" style="flex: 1; display: flex; gap: 4px; align-items: center;">
+                <input
+                  type="text"
+                  id="subject-input"
+                  placeholder="e.g. SUBJ_TEST_001"
+                  value="SUBJ_TEST_001"
+                  title="Subject ID folder where downloaded & generated images will reside"
+                  style="flex: 1; width: 100%; padding: 4px 8px; font-size: 0.82rem; border-radius: 4px; border: 1px solid var(--border-color, #ccc); background: var(--bg-surface, #fff); color: var(--text-primary, #111);"
+                />
+                <select
+                  id="subject-select"
+                  title="Select detected subject from questionnaire"
+                  style="display: none; flex: 1; width: 100%; padding: 4px 8px; font-size: 0.82rem; border-radius: 4px; border: 1px solid var(--border-color, #ccc); background: var(--bg-surface, #fff); color: var(--text-primary, #111);"
+                >
+                </select>
+                <button
+                  type="button"
+                  id="btn-toggle-subject-mode"
+                  class="btn-subtle"
+                  title="Switch between text input and questionnaire subjects dropdown"
+                  style="display: none; padding: 2px 6px; font-size: 0.75rem; height: 26px; line-height: 1;"
+                >
+                  ⇄
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Generate Controls: Checkboxes (Related concepts, Images) + Generate Button -->
+          <div class="tree-generate-bar">
+            <div class="tree-generate-checks">
+              <label class="toggle-label" title="Generate related concepts via LLM for checked concepts">
+                <input type="checkbox" id="gen-related-toggle" checked>
+                <span>Related concepts</span>
+              </label>
+              <label class="toggle-label" title="Acquire or generate stimulus images for checked items">
+                <input type="checkbox" id="gen-images-toggle" checked>
+                <span>Images</span>
+              </label>
+            </div>
+            <div class="acquire-btn-row">
+              <button id="btn-generate" class="btn-primary full-width" type="button" title="Generate related concepts and acquire images for checked items in the tree">
+                <span class="btn-text">Generate</span>
+                <span class="spinner hidden" id="generate-spinner"></span>
+              </button>
+              <button id="btn-stop-acquire" class="btn-danger hidden" style="flex-shrink: 0;" type="button" title="Stop generation in progress">
+                ⏹ Stop
+              </button>
+            </div>
+            <div class="acquisition-plan-hint" id="acquisition-plan-hint">
+              Check items in the concept tree and click Generate.
+            </div>
+          </div>
+        </div>
+
+        <div class="tree-panel-header">
+          <div class="tree-header-title">
+            <span class="tree-icon">🌳</span>
+            <h3>Concept Tree</h3>
+            <span class="badge-count" id="tree-total-badge">0</span>
+          </div>
+          <div class="tree-actions">
+            <label class="tree-select-all-label" title="Select or deselect all items in tree">
+              <input type="checkbox" id="tree-select-all-checkbox" checked>
+              <span>Select all</span>
+            </label>
+            <button id="btn-clear-tree" class="btn-subtle text-xs" type="button" title="Clear all concepts">Clear</button>
+            <button id="btn-toggle-expand-tree" class="btn-subtle text-xs tree-expand-btn" type="button" title="Collapse all tree nodes">
+              <span class="expand-toggle-icon">⤡</span>
+              <span class="expand-toggle-text">Collapse</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="tree-filter-box">
+          <input type="text" id="tree-filter-input" placeholder="Filter concepts in tree...">
+        </div>
+
+        <div class="concept-tree-container" id="concept-tree-container">
+          <!-- Dynamically populated hierarchical tree view -->
+          <div class="tree-empty-state" id="tree-empty-state">
+            <p>No concepts loaded.</p>
+            <p class="text-xs text-muted">Upload a file or enter a seed concept above to build the tree.</p>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Horizontal Resizer Splitter -->
+      <div class="workspace-splitter" id="workspace-splitter" role="separator" aria-orientation="vertical" tabindex="0" title="Drag to resize Concept Tree panel (Double-click to reset)">
+        <div class="workspace-splitter-handle"></div>
+      </div>
+
+      <!-- Right Panel: Telemetry Bar, Active Details, and Image Gallery -->
+      <section class="workspace-main-panel">
+
+        <!-- FinOps Telemetry Bar -->
+        <div class="telemetry-bar">
+          <div class="metric-block">
+            <span class="metric-label">Latency</span>
+            <span class="metric-value" id="metric-latency">0 ms</span>
+          </div>
+          <div class="metric-block">
+            <span class="metric-label">Token Footprint</span>
+            <span class="metric-value" id="metric-tokens">0 toks</span>
+          </div>
+          <div class="metric-block">
+            <span class="metric-label">Cost</span>
+            <span class="metric-value highlight" id="metric-cost">$0.0000</span>
+          </div>
+          <div class="metric-block">
+            <span class="metric-label">Cost Avoidance</span>
+            <span class="metric-value savings" id="metric-savings" title="Estimated savings vs baseline cloud model">$0.0000</span>
+          </div>
+          <div class="metric-block">
+            <span class="metric-label">Cache Hit</span>
+            <span class="metric-value" id="metric-cache-hit">0%</span>
+          </div>
+          <button id="btn-reset-telemetry" class="btn-subtle text-xs" title="Reset telemetry">Reset</button>
+        </div>
+
+        <!-- Stimulus Image Gallery Workspace -->
+        <div class="card gallery-card">
+          <div class="results-header">
+            <div>
+              <h2 id="gallery-title">Stimulus Image Workspace</h2>
+              <p class="subtitle" id="gallery-subtitle">Images will appear here once acquired. Click any concept or association in the tree to filter.</p>
+            </div>
+            <div class="results-actions" style="display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap;">
+              <label class="toggle-label" style="font-size: 0.74rem; cursor: pointer; display: flex; align-items: center; gap: 0.3rem;">
+                <input type="checkbox" id="toggle-face-roi" checked>
+                <span>Show Face ROI</span>
+              </label>
+              <span class="image-count-badge" id="image-count-badge">0 images</span>
+              <button id="btn-crop-selected" class="btn-subtle" disabled title="Auto-crop frontal faces in checked concept images to target dimensions">Crop Selected</button>
+              <button id="btn-export-json" class="btn-subtle" disabled title="Export all concepts and related associations as JSON">Export JSON</button>
+              <button id="btn-export-csv" class="btn-subtle" disabled title="Export all concepts and related associations as CSV">Export CSV</button>
+            </div>
+          </div>
+
+          <div id="gallery-grid" class="gallery-grid">
+            <!-- Stimulus images -->
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Workflow Assistant Chat Dock -->
+  <aside class="chat-dock minimized" id="chat-dock">
+    <div class="chat-header">
+      <div class="chat-header-title">
+        <span class="chat-icon">💬</span>
+        <div>
+          <h3>Workflow Assistant</h3>
+          <span class="chat-subtitle">Conversational Concept & Task Studio</span>
+        </div>
+      </div>
+      <div class="chat-header-actions">
+        <button id="btn-clear-chat" class="btn-subtle text-xs" title="Clear transcript">Clear</button>
+        <button id="btn-close-chat" class="btn-subtle text-xs" title="Minimize assistant">✕</button>
+      </div>
+    </div>
+    
+    <div class="chat-transcript" id="chat-transcript">
+      <!-- Chat bubbles -->
+    </div>
+
+    <div class="chat-choices-container" id="chat-choices-container">
+      <!-- Quick choice action chips -->
+    </div>
+
+    <form class="chat-input-row" id="chat-input-form">
+      <input type="text" id="chat-input-text" placeholder="Type a concept, command, or 'help'...">
+      <button type="submit" class="btn-primary" id="btn-chat-send">Send</button>
+    </form>
+  </aside>
+
+  <!-- Image Lightbox Modal -->
+  <div class="modal-overlay hidden" id="image-lightbox-modal">
+    <div class="modal-content lightbox-content">
+      <div class="modal-header">
+        <h3 id="lightbox-title">Stimulus Image Preview</h3>
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <label class="toggle-label" style="font-size: 0.76rem; cursor: pointer; display: flex; align-items: center; gap: 0.35rem;">
+            <input type="checkbox" id="lightbox-face-roi-toggle" checked>
+            <span>Show Face ROI</span>
+          </label>
+          <button id="btn-close-lightbox" class="btn-subtle icon-btn" title="Close preview">✕</button>
+        </div>
+      </div>
+      <div class="lightbox-body" style="position: relative; display: flex; justify-content: center; align-items: center; overflow: hidden; background-color: #0f172a; border-radius: var(--radius-sm); min-height: 250px;">
+        <div class="lightbox-img-wrapper" id="lightbox-img-wrapper" style="position: relative; display: inline-block; max-height: 65vh;">
+          <img id="lightbox-img" src="" alt="Preview" style="display: block; max-height: 65vh; max-width: 100%; object-fit: contain;">
+          <canvas id="lightbox-roi-canvas" style="position: absolute; top: 0; left: 0; pointer-events: none;"></canvas>
+        </div>
+      </div>
+      <div class="lightbox-footer">
+        <div class="lightbox-meta" id="lightbox-meta"></div>
+        <div class="lightbox-actions" style="display: flex; gap: 0.5rem; align-items: center;">
+          <span id="lightbox-face-status" class="badge-status" style="font-size: 0.72rem;"></span>
+          <button id="btn-lightbox-crop-face" class="btn-secondary text-xs" title="Crop image to detected frontal face (160×160)">Crop Face (160×160)</button>
+          <button id="btn-lightbox-delete" class="btn-danger text-xs">Delete Image</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Help & User Guide Modal -->
+  <div class="modal-overlay hidden" id="help-guide-modal">
+    <div class="modal-content help-modal-content">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
+          <span style="font-size: 1.25rem;">📘</span>
+          <div>
+            <h3 style="font-size: 1.05rem; margin: 0; line-height: 1.2;">StimStudio User Guide &amp; How-To</h3>
+            <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">Step-by-step workflow, features, and reference</p>
+          </div>
+        </div>
+        <button id="btn-close-help" class="btn-subtle icon-btn" title="Close Help">✕</button>
+      </div>
+
+      <!-- Navigation Tabs Bar (Pinned below header) -->
+      <div class="help-tabs-nav">
+        <button class="help-tab-btn active" data-tab="quickstart">🚀 Quickstart</button>
+        <button class="help-tab-btn" data-tab="images-faces">📸 Images &amp; Faces</button>
+        <button class="help-tab-btn" data-tab="finops">📊 FinOps &amp; Costs</button>
+        <button class="help-tab-btn" data-tab="offline">🔒 Air-Gapped Privacy</button>
+        <button class="help-tab-btn" data-tab="api-dev">⚡ API &amp; Developers</button>
+      </div>
+
+      <div class="help-modal-body">
+        <!-- Tab 1: Quickstart -->
+        <div class="help-tab-pane active" id="pane-quickstart">
+          <h4 class="help-pane-title">How to Generate Stimuli (5 Easy Steps)</h4>
+          
+          <div class="help-step-card">
+            <div class="help-step-badge">1</div>
+            <div class="help-step-text">
+              <strong>Enter or Load Seed Concepts</strong>
+              <p>Type initial concepts (e.g. <code>basketball, Michael Jordan</code>) into the input box on the left, or click <strong>📂 File…</strong> to import from CSV, Excel, TXT, Word (.docx), or questionnaire files. Set an optional <strong>Subject ID</strong> (e.g. <code>SUBJ_TEST_001</code>) to organize files per subject.</p>
+            </div>
+          </div>
+
+          <div class="help-step-card">
+            <div class="help-step-badge">2</div>
+            <div class="help-step-text">
+              <strong>Choose Your AI Inference Provider</strong>
+              <p>Click <strong>Settings</strong> at the top to select your provider:</p>
+              <ul>
+                <li><strong>Local Llama.cpp (GGUF):</strong> $0.00 cost, runs 100% locally on your Mac with zero network data transfer.</li>
+                <li><strong>Cloud Models (Gemini, Claude, OpenAI):</strong> High-reasoning cloud inference with real-time token tracking.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="help-step-card">
+            <div class="help-step-badge">3</div>
+            <div class="help-step-text">
+              <strong>Choose Image Source &amp; Settings</strong>
+              <p>Select where stimulus pictures come from:</p>
+              <ul>
+                <li><strong>Wikimedia &amp; Wikipedia:</strong> Free, authentic high-res reference images.</li>
+                <li><strong>DuckDuckGo / Bing:</strong> Web image search with strict safe-search filters.</li>
+                <li><strong>Local Stable Diffusion / DALL-E:</strong> AI-generated images from scratch.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="help-step-card">
+            <div class="help-step-badge">4</div>
+            <div class="help-step-text">
+              <strong>Generate &amp; Curate the Concept Tree</strong>
+              <p>Select whether you want <strong>Related concepts</strong> and/or <strong>Images</strong>, then click <strong>Generate</strong>. The system populates an interactive tree showing seed concepts and their associative expansions. <strong>Right-click any concept</strong> (or click the <strong>➕</strong> button) to type in custom related concepts in case generation missed a concept you need.</p>
+            </div>
+          </div>
+
+          <div class="help-step-card">
+            <div class="help-step-badge">5</div>
+            <div class="help-step-text">
+              <strong>Inspect, Crop, or Export in Gallery</strong>
+              <p>Click any thumbnail in the gallery to open the Lightbox. Inspect detected frontal faces and ROI bounding boxes, perform automatic 160×160 square face crops, or click the folder icon to reveal downloaded stimulus files on your computer.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Images & Face Detection -->
+        <div class="help-tab-pane" id="pane-images-faces">
+          <h4 class="help-pane-title">Image Acquisition &amp; Face Detection</h4>
+          
+          <div class="help-feature-item">
+            <div class="help-feature-header">
+              <span class="help-feature-icon">👤</span>
+              <strong>Face Detection &amp; ROI</strong>
+            </div>
+            <p>StimStudio automatically scans downloaded images for frontal faces and draws color-coded ROI (Region of Interest) bounding boxes. This ensures faces are centered, visible, and suitable for visual psychology/neuroscience paradigms.</p>
+          </div>
+
+          <div class="help-feature-item">
+            <div class="help-feature-header">
+              <span class="help-feature-icon">✂️</span>
+              <strong>Auto-Crop to Target Dimensions</strong>
+            </div>
+            <p>Enable <strong>Auto-Crop</strong> in Settings (default: <code>160×160 px</code>) to automatically center-crop and resize detected faces to uniform dimensions, eliminating tedious manual image editing for EEG/fMRI protocols.</p>
+          </div>
+
+          <div class="help-feature-item">
+            <div class="help-feature-header">
+              <span class="help-feature-icon">📁</span>
+              <strong>Subject-Specific Output Folders</strong>
+            </div>
+            <p>Images are automatically organized into <code>data/image_workspace/downloads/&lt;Subject-ID&gt;/&lt;concept&gt;/</code>. You can click the folder icon on any gallery header to reveal the folder directly in Finder.</p>
+          </div>
+        </div>
+
+        <!-- Tab 3: FinOps & Costs -->
+        <div class="help-tab-pane" id="pane-finops">
+          <h4 class="help-pane-title">What is "FinOps Telemetry"?</h4>
+          <p style="margin-bottom: 0.85rem; color: var(--text-secondary); font-size: 0.88rem;">
+            <strong>FinOps</strong> (Financial Operations) is the discipline of tracking and managing cloud AI costs. In StimStudio, this is a passive monitoring tool so researchers don't accidentally burn through grant funding or cloud budgets.
+          </p>
+
+          <div class="help-info-grid">
+            <div class="help-info-box">
+              <div class="help-info-box-title">⏱️ Latency (ms)</div>
+              <p>Measures the speed of generation calls (average and 95th percentile response times).</p>
+            </div>
+            <div class="help-info-box">
+              <div class="help-info-box-title">🔢 Tokens</div>
+              <p>Total prompt and completion tokens processed across all LLM requests.</p>
+            </div>
+            <div class="help-info-box">
+              <div class="help-info-box-title">💵 Spend ($)</div>
+              <p>Estimated dollar cost incurred from commercial cloud APIs based on official per-million token rates.</p>
+            </div>
+            <div class="help-info-box">
+              <div class="help-info-box-title">🛡️ Cost Avoided ($)</div>
+              <p>Dollars saved by utilizing free local models or the in-memory cache instead of cloud APIs.</p>
+            </div>
+          </div>
+
+          <div class="help-tip-callout">
+            <strong>💡 Pro-Tip:</strong> The <strong>Semantic LRU Cache</strong> prevents re-running identical prompts. Subsequent generations for the same seed return in under 2 ms at $0.00 cost!
+          </div>
+        </div>
+
+        <!-- Tab 4: Air-Gapped Privacy -->
+        <div class="help-tab-pane" id="pane-offline">
+          <h4 class="help-pane-title">Air-Gapped &amp; HIPAA/IRB Compliance</h4>
+          <p style="margin-bottom: 0.75rem; color: var(--text-secondary); font-size: 0.88rem;">
+            When working with sensitive patient questionnaires or IRB-restricted concepts, you can run StimStudio in <strong>100% offline mode</strong>:
+          </p>
+
+          <ul class="help-checklist">
+            <li><strong>Step 1:</strong> In <em>Settings &gt; Inference Provider</em>, select <code>Local Llama.cpp (GGUF)</code>. StimStudio will discover or let you browse for quantized <code>.gguf</code> model weights on your Mac.</li>
+            <li><strong>Step 2:</strong> In <em>Settings &gt; Image Source</em>, choose <code>Local Stable Diffusion</code> or use local folder image assets.</li>
+            <li><strong>Result:</strong> Zero prompts, tokens, or images leave your local workstation. All computation executes locally on your CPU/Metal GPU with $0.00 cost and zero cloud transmission.</li>
+          </ul>
+        </div>
+
+        <!-- Tab 5: API & Developers -->
+        <div class="help-tab-pane" id="pane-api-dev">
+          <h4 class="help-pane-title">Developer &amp; Automation Reference</h4>
+          <p style="margin-bottom: 1rem; color: var(--text-secondary); font-size: 0.88rem;">
+            StimStudio is backed by a headless FastAPI service. You can automate pipelines or query the API directly via HTTP:
+          </p>
+
+          <div class="help-docs-links">
+            <a href="/docs" target="_blank" class="btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem;">
+              <span>📖 Open Interactive Swagger UI</span> ↗
+            </a>
+            <a href="/redoc" target="_blank" class="btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem;">
+              <span>📄 ReDoc Specification</span> ↗
+            </a>
+          </div>
+
+          <div class="help-code-snippet">
+            <div class="code-title">Generate Concepts via cURL</div>
+            <pre><code>curl -X POST "http://localhost:8000/api/v1/concepts/generate" \
+  -H "Content-Type: application/json" \
+  -d '{"seed_concepts": ["basketball"], "max_concepts": 5, "provider": "local"}'</code></pre>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1.25rem; border-top: 1px solid var(--border-color); background: var(--bg-subtle);">
+        <span style="font-size: 0.75rem; color: var(--text-muted);">StimStudio</span>
+        <button id="btn-close-help-footer" class="btn-secondary text-xs">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Related Concept Modal -->
+  <div class="modal-overlay hidden" id="add-related-modal">
+    <div class="modal-content add-related-modal-content">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
+          <span style="font-size: 1.15rem;">➕</span>
+          <div>
+            <h3 style="font-size: 0.98rem; margin: 0; line-height: 1.2;">Add Related Concept</h3>
+            <p id="add-related-subtitle" style="font-size: 0.74rem; color: var(--text-secondary); margin: 0;">Add custom association for concept</p>
+          </div>
+        </div>
+        <button id="btn-close-add-related" class="btn-subtle icon-btn" title="Close dialog">✕</button>
+      </div>
+      <form id="add-related-form" style="padding: 1.15rem; display: flex; flex-direction: column; gap: 0.85rem;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="add-related-input" style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.35rem; display: block;">Related Concept / Association Name</label>
+          <input
+            type="text"
+            id="add-related-input"
+            placeholder="e.g. Steph Curry (or comma-separated: Curry, Warriors)"
+            autocomplete="off"
+            style="width: 100%; padding: 0.5rem 0.75rem; font-size: 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-surface, #fff); color: var(--text-primary);"
+          />
+          <span class="field-hint" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem; display: block;">
+            Type one or more related concepts (comma-separated for multiple).
+          </span>
+        </div>
+        <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.4rem; padding-top: 0.75rem; border-top: 1px solid var(--border-color); background: transparent;">
+          <button type="button" id="btn-cancel-add-related" class="btn-subtle text-xs">Cancel</button>
+          <button type="submit" id="btn-submit-add-related" class="btn-primary text-xs">Add Concept</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Context / Category Modal -->
+  <div class="modal hidden" id="edit-context-modal">
+    <div class="modal-backdrop" id="edit-context-backdrop"></div>
+    <div class="modal-content add-related-modal-content">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
+          <span style="font-size: 1.15rem;">🏷️</span>
+          <div>
+            <h3 style="font-size: 0.98rem; margin: 0; line-height: 1.2;">Edit Context / Category</h3>
+            <p id="edit-context-subtitle" style="font-size: 0.74rem; color: var(--text-secondary); margin: 0;">Provide domain hints for LLM generation &amp; image search</p>
+          </div>
+        </div>
+        <button id="btn-close-edit-context" class="btn-subtle icon-btn" title="Close dialog">✕</button>
+      </div>
+      <form id="edit-context-form" style="padding: 1.15rem; display: flex; flex-direction: column; gap: 0.85rem;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="edit-context-input" style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.35rem; display: block;">Context / Category / Description</label>
+          <input
+            type="text"
+            id="edit-context-input"
+            placeholder="e.g. TV show, HBO series, NBA basketball team, rock band"
+            autocomplete="off"
+            style="width: 100%; padding: 0.5rem 0.75rem; font-size: 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-surface, #fff); color: var(--text-primary);"
+          />
+          <span class="field-hint" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem; display: block;">
+            Clarifies ambiguous concepts (e.g. specifying "TV show" ensures Entourage generates show characters instead of bodyguards).
+          </span>
+        </div>
+        <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.4rem; padding-top: 0.75rem; border-top: 1px solid var(--border-color); background: transparent;">
+          <button type="button" id="btn-cancel-edit-context" class="btn-subtle text-xs">Cancel</button>
+          <button type="submit" id="btn-submit-edit-context" class="btn-primary text-xs">Save Context</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Tree Item Action Context Menu -->
+  <div class="tree-context-menu hidden" id="tree-context-menu">
+    <button class="context-item context-menu-item" data-action="acquire" id="ctx-acquire">📸 Acquire Images</button>
+    <button class="context-item context-menu-item" data-action="acquire-text" id="ctx-acquire-text">📝 Generate Text Image</button>
+    <button class="context-item context-menu-item" data-action="generate" id="ctx-generate">⚡ Get Related Concepts</button>
+    <button class="context-item context-menu-item" data-action="add-related" id="ctx-add-related">➕ Add Related Concept…</button>
+    <button class="context-item context-menu-item" data-action="edit-context" id="ctx-edit-context">🏷️ Edit Context / Category…</button>
+    <div class="context-divider"></div>
+    <button class="context-item context-menu-item" data-action="clear-images" id="ctx-clear-images">🧹 Clear Images</button>
+    <button class="context-item context-menu-item text-danger" data-action="delete" id="ctx-delete">🗑 Delete Item</button>
+  </div>
+
+  <script src="app.js?v=20261023_v16"></script>
+</body>
+</html>
