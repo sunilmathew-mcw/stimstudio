@@ -9,9 +9,7 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 <p align="center">
-  <video src="docs/images/stimstudio_demo.mp4" controls autoplay loop muted playsinline width="100%">
-    <img src="docs/images/stimstudio_demo.gif" alt="StimStudio Feature Demo" width="100%" />
-  </video>
+  <img src="docs/images/stimstudio_demo.gif" alt="StimStudio Feature Demo" width="100%" />
 </p>
 <p align="center"><em>Interactive StimStudio Workflow &amp; Feature Demonstration</em></p>
 
