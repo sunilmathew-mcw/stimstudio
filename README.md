@@ -8,9 +8,11 @@
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://www.docker.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-<p align="center">
-  <img src="docs/images/stimstudio_demo.gif" alt="StimStudio Feature Demo" width="100%" />
-</p>
+
+
+https://github.com/user-attachments/assets/90d99818-ae83-4cac-959e-53a6726b8966
+
+
 <p align="center"><em>Interactive StimStudio Workflow &amp; Feature Demonstration</em></p>
 
 ---
